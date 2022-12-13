@@ -1,6 +1,6 @@
 package server.operations;
 
-import server.entities.LockableUserDao;
+import server.dto.LockableUserDao;
 
 public class SignUpOperation extends AbstractOperation {
 
@@ -20,7 +20,7 @@ public class SignUpOperation extends AbstractOperation {
         if (this.username == null || this.username.isEmpty()
                 || this.password == null || this.password.isEmpty()) return false;
 
-        if (userDao.exists(this.username)) return false;
+        if (userDao.checkUserExists(this.username)) return false;
 
         return userDao.lock(this.username, this.getId());
     }
@@ -35,7 +35,7 @@ public class SignUpOperation extends AbstractOperation {
         if (!userDao.unlock(this.username, this.getId())) return false;
 
         // Now that the resource is unlocked, add new user and return false if new user is null
-        return userDao.add(username, password) != null;
+        return userDao.addUser(username, password) != null;
     }
 
     @Override

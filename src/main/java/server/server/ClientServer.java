@@ -3,7 +3,7 @@ package server.server;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
-import server.entities.User;
+import server.entities.Client;
 
 /**
  * Represents the features of the server exposed to the client.
@@ -16,8 +16,7 @@ public interface ClientServer extends Remote {
      * @param username unique identifier for the user
      * @return the newly created user
      */
-    User signUp(String username, String password) throws RemoteException;
-    // TODO: Return some sort of token?
+    Client signUp(String username, String password) throws RemoteException;
 
     /**
      * Log in the existing user with the given username
@@ -26,7 +25,7 @@ public interface ClientServer extends Remote {
      * @param password password of the user
      * @return the logged-in user
      */
-    User login(String username, String password) throws RemoteException;
+    Client login(String username, String password) throws RemoteException;
 
     /**
      * Gets a password of a user if it exists.
@@ -35,7 +34,7 @@ public interface ClientServer extends Remote {
      * @param name the name of the password.
      * @return the password if it exists else null.
      */
-    String GetPassword(User user, String name) throws RemoteException;
+    String GetPassword(Client user, String name) throws RemoteException;
 
     /**
      * Deletes the password of a user if it exists.
@@ -44,7 +43,7 @@ public interface ClientServer extends Remote {
      * @param name the name of the password.
      * @return true if the server deletes the password for the user else false.
      */
-    Boolean DeletePassword(User user, String name) throws RemoteException;
+    Boolean DeletePassword(Client user, String name) throws RemoteException;
 
     /**
      * Adds a password to a user.
@@ -54,5 +53,5 @@ public interface ClientServer extends Remote {
      * @param value value of the password
      * @return true if password is added.
      */
-    Boolean PutPassword(User user, String name, String value) throws RemoteException;
+    Boolean PutPassword(Client user, String name, String value) throws RemoteException;
 }

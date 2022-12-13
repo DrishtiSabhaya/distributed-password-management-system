@@ -1,6 +1,6 @@
 package server.operations;
 
-import server.entities.LockableUserDao;
+import server.dto.LockableUserDao;
 
 import java.io.Serializable;
 
@@ -9,8 +9,6 @@ import java.io.Serializable;
  * our datastore.
  */
 public interface Operation extends Serializable {
-
-    // Extends serializable because this object is going to be sent via RMI
 
     /**
      * Execute this operation on the password database.

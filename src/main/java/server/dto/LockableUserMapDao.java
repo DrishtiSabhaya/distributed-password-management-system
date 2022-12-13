@@ -1,9 +1,11 @@
-package server.entities;
+package server.dto;
+
+import server.entities.Client;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class LockableUserMapDao extends UserMapDao implements LockableUserDao {
+public class LockableUserMapDao extends UserInfoMapInfoDao implements LockableUserDao {
 
     private final Map<String, String> lockedByLocker;
 
@@ -43,10 +45,10 @@ public class LockableUserMapDao extends UserMapDao implements LockableUserDao {
     }
 
     @Override
-    public User add(String username, String password) {
+    public Client addUser(String username, String password) {
         // If the username is locked, then return null.
         if (username != null && lockedByLocker.containsKey(username)) return null;
 
-        return super.add(username, password);
+        return super.addUser(username, password);
     }
 }

@@ -11,9 +11,6 @@ import java.rmi.RemoteException;
 public class ServerDriver {
    // eg: -p 1111 -cp 2222 -ch localhost -n server
     public static void main(String[] args) {
-
-        //TODO: Handle errors when disconnecting and reconnecting
-
         if (args.length < 8) {
             System.out.println("Invalid number of arguments");
             System.exit(1);

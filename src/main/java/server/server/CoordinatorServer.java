@@ -2,7 +2,7 @@ package server.server;
 
 import server.entities.Result;
 import server.entities.Server;
-import server.entities.User;
+import server.entities.Client;
 import server.operations.Operation;
 
 import java.rmi.Remote;
@@ -42,7 +42,7 @@ public interface CoordinatorServer extends Remote {
      * 
      * @return list of users
      */
-    List<User> getAllUsers() throws RemoteException;
+    List<Client> getAllUsers() throws RemoteException;
 
     /**
      * Gets a password of a user if it exists.
@@ -51,7 +51,7 @@ public interface CoordinatorServer extends Remote {
      * @param name the name of the password.
      * @return A result object with the password or null as value
      */
-    Result getPassword(User user, String name) throws RemoteException;
+    Result getPassword(Client user, String name) throws RemoteException;
 
     /**
      * Checks if a password of a user exists.
@@ -60,7 +60,7 @@ public interface CoordinatorServer extends Remote {
      * @param name the name of the password.
      * @return true if the server has the password for the user else false.
      */
-    Boolean hasPassword(User user, String name) throws RemoteException;
+    Boolean hasPassword(Client user, String name) throws RemoteException;
 
     /**
      * Deletes the password of a user if it exists.
@@ -69,7 +69,7 @@ public interface CoordinatorServer extends Remote {
      * @param name the name of the password.
      * @return true if the server deletes the password for the user else false.
      */
-    Boolean deletePassword(User user, String name) throws RemoteException;
+    Boolean deletePassword(Client user, String name) throws RemoteException;
 
     /**
      * Sets the coordinator information for the server.

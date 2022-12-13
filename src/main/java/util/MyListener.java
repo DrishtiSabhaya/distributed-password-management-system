@@ -5,8 +5,8 @@ import java.rmi.RemoteException;
 import javax.jms.*;
 
 import server.coordinator.MutableCoordinator;
-import server.entities.ModificationOperation;
-import server.entities.ServerListModificationRequest;
+import server.entities.ServerOperation;
+import server.entities.ServerListOperation;
 
 /**
  * An implementation of MessageListener which helps create async calls to add or remove server.
@@ -21,10 +21,10 @@ public class MyListener implements MessageListener {
     public void onMessage(Message m) {
         try {
             ObjectMessage msg = (ObjectMessage) m;
-            ServerListModificationRequest req = (ServerListModificationRequest) msg.getObject();
-            if (req.op == ModificationOperation.Add) {
+            ServerListOperation req = (ServerListOperation) msg.getObject();
+            if (req.op == ServerOperation.Add) {
                 this.coordinator.addServer(req.server.host, req.server.port, req.server.name);
-            } else if (req.op == ModificationOperation.Remove) {
+            } else if (req.op == ServerOperation.Remove) {
                 this.coordinator.removeServer(req.server.name);
             }
         } catch (JMSException e) {

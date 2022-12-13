@@ -101,14 +101,6 @@ public class Encryptor {
         }
         return null;
     }
-
-    public static void main(String args[]) {
-        Encryptor e = new Encryptor();
-        String enc = e.encrypt("hello world");
-        System.out.println(enc);
-        String dec = e.decrypt(enc);
-        System.out.println(dec);
-    }
 }
 
 

@@ -22,6 +22,8 @@ import org.apache.activemq.ActiveMQConnectionFactory;
 
 import org.apache.log4j.Logger;
 import server.coordinator.MutableCoordinator;
+import server.dto.LockableUserDao;
+import server.dto.LockableUserMapDao;
 import server.entities.*;
 import server.operations.Operation;
 import util.Encryptor;
@@ -29,14 +31,8 @@ import util.Encryptor;
 public class Server extends java.rmi.server.UnicastRemoteObject
     implements ClientServer, CoordinatorServer {
 
-    private final Map<User, Map<String, String>> map;
+    private final Map<Client, Map<String, String>> map;
     private final Map<String, Operation> operationsById;
-
-    // Idea: Create a method in CoordinatorServer called addCoordinator that takes
-    // in a Coordinator.
-    // This server will boot up, send a message on JMS. Coordinator will pick this
-    // server up and call addCoordinator to add
-    // it's reference to this server.
     private MutableCoordinator coordinator;
     private final LockableUserDao users;
     private String host;
@@ -125,20 +121,20 @@ public class Server extends java.rmi.server.UnicastRemoteObject
     }
 
     @Override
-    public Result getPassword(User user, String name) throws RemoteException {
+    public Result getPassword(Client user, String name) throws RemoteException {
         Result res = new Result(name, null);
-        if (!this.users.exists(user)) {
+        if (!this.users.checkUserExists(user)) {
             return res;
         }
         Map<String, String> map = this.map.get(user);
         if (map != null)
-            res.value = map.get(name);
+            res.pvalue = map.get(name);
         return res;
     }
 
     @Override
-    public Boolean hasPassword(User user, String name) throws RemoteException {
-        if (!this.users.exists(user)) {
+    public Boolean hasPassword(Client user, String name) throws RemoteException {
+        if (!this.users.checkUserExists(user)) {
             return false;
         }
         Map<String, String> map = this.map.get(user);
@@ -146,8 +142,8 @@ public class Server extends java.rmi.server.UnicastRemoteObject
     }
 
     @Override
-    public Boolean deletePassword(User user, String name) throws RemoteException {
-        if (!this.users.exists(user)) {
+    public Boolean deletePassword(Client user, String name) throws RemoteException {
+        if (!this.users.checkUserExists(user)) {
             return false;
         }
         Map<String, String> map = this.map.get(user);
@@ -155,11 +151,11 @@ public class Server extends java.rmi.server.UnicastRemoteObject
     }
 
     @Override
-    public User signUp(String username, String password) throws RemoteException {
+    public Client signUp(String username, String password) throws RemoteException {
         boolean result = this.coordinator.signUp(username, password);
         if (result) {
             log.info("Successfully signed up new user.");
-            return this.users.find(username, password);
+            return this.users.findUser(username, password);
         } else {
             log.info("Couldn't create a new user with these credentials.");
             return null;
@@ -167,8 +163,8 @@ public class Server extends java.rmi.server.UnicastRemoteObject
     }
 
     @Override
-    public User login(String username, String password) throws RemoteException {
-        return this.users.find(username, password);
+    public Client login(String username, String password) throws RemoteException {
+        return this.users.findUser(username, password);
     }
 
     public static void main(String[] args) {
@@ -182,70 +178,70 @@ public class Server extends java.rmi.server.UnicastRemoteObject
     }
 
     @Override
-    public String GetPassword(User user, String name) throws RemoteException {
-        log.info(String.format("GetPassword received for %s by %s", name, user.name));
+    public String GetPassword(Client user, String name) throws RemoteException {
+        log.info(String.format("GetPassword received for %s by %s", name, user.username));
         Result res = this.getPassword(user, name);
-        if (res.value != null) {
-            log.info(String.format("Password %s got value %s for user %s", name, res.value,
-                user.name));
-            res.value = encryptor.decrypt(res.value);
+        if (res.pvalue != null) {
+            log.info(String.format("Password %s got value %s for user %s", name, res.pvalue,
+                user.username));
+            res.pvalue = encryptor.decrypt(res.pvalue);
 
-            return res.value;
+            return res.pvalue;
         }
         try {
             CoordinatorResult result = this.coordinator.GetPassword(user, name);
             if (result.isSuccess && this.coordinator.GetPasswordAck(user, name, result.secret,
                 this.self)) {
                 Map<String, String> uMap = this.map.getOrDefault(user, new ConcurrentHashMap<>());
-                uMap.put(name, result.result.value);
+                uMap.put(name, result.result.pvalue);
                 this.map.put(user, uMap);
                 log.info(String.format("Password %s got value %s for user %s", name,
-                    result.result.value, user.name));
-                result.result.value = encryptor.decrypt(result.result.value);
+                    result.result.pvalue, user.username));
+                result.result.pvalue = encryptor.decrypt(result.result.pvalue);
 
-                return result.result.value;
+                return result.result.pvalue;
             }
         } catch (RemoteException e) {
-            log.error(String.format("Error in getting password %s for %s :: %s", name, user.name,
+            log.error(String.format("Error in getting password %s for %s :: %s", name, user.username,
                 e.getMessage()));
             e.printStackTrace();
         }
-        log.info(String.format("Password %s not found for user %s", name, user.name));
+        log.info(String.format("Password %s not found for user %s", name, user.username));
         return null;
     }
 
     @Override
-    public Boolean DeletePassword(User user, String name) throws RemoteException {
-        log.info(String.format("DeletePassword received for %s by %s", name, user.name));
+    public Boolean DeletePassword(Client user, String name) throws RemoteException {
+        log.info(String.format("DeletePassword received for %s by %s", name, user.username));
         Map<String, String> map = this.map.get(user);
         if (map != null && this.deletePassword(user, name)) {
-            log.info(String.format("Password %s by %s not deleted.", name, user.name));
+            log.info(String.format("Password %s by %s not deleted.", name, user.username));
             return true;
         }
         try {
             CoordinatorResult reasult = this.coordinator.GetPassword(user, name);
             if (reasult.isSuccess && this.coordinator.GetPasswordAck(user, name, reasult.secret,
                 this.self)) {
-                log.info(String.format("Password %s by %s was deleted.", name, user.name));
+                log.info(String.format("Password %s by %s was deleted.", name, user.username));
                 return true;
             }
         } catch (RemoteException e) {
             log.error(String.format("Error in deleting password %s for %s :: %s", name,
-                user.name, e.getMessage()));
+                user.username, e.getMessage()));
             e.printStackTrace();
         }
-        log.info(String.format("Password %s by %s not deleted.", name, user.name));
+        log.info(String.format("Password %s by %s not deleted.", name, user.username));
         return false;
     }
 
     @Override
-    public Boolean PutPassword(User user, String name, String value) throws RemoteException {
+    public Boolean PutPassword(Client user, String name, String value) throws RemoteException {
         Encryptor encryptor = new Encryptor();
         value = encryptor.encrypt(value);
         log.info(String.format("PutPassword received for %s by %s with value %s", name,
-            user.name, value));
-        if (!this.users.exists(user)) {
-            log.info(String.format("Password %s by %s was not added.", name, user.name));
+            user.username, value));
+        if (!this.users.checkUserExists(user)) {
+            log.info(String.format("Password %s by %s was not added.", name, user.username));
             return false;
         }
         Map<String, String> keyValueMap = this.map.get(user);
@@ -255,7 +251,7 @@ public class Server extends java.rmi.server.UnicastRemoteObject
         }
         keyValueMap.put(name, value);
         log.info(String.format("Password %s by %s with value %s was added.", name,
-            user.name, value));
+            user.username, value));
         return true;
     }
 
@@ -271,7 +267,7 @@ public class Server extends java.rmi.server.UnicastRemoteObject
             Queue queue = session.createQueue("server change queue");
             MessageProducer sender = session.createProducer(queue);
             ObjectMessage obj = session.createObjectMessage
-                (new ServerListModificationRequest(ModificationOperation.Add,
+                (new ServerListOperation(ServerOperation.Add,
                     new server.entities.Server(name, host, port)));
             sender.send(obj, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY,
                 Message.DEFAULT_TIME_TO_LIVE);
@@ -295,7 +291,7 @@ public class Server extends java.rmi.server.UnicastRemoteObject
             log.info("Server and coordinator synced.");
 
             // Sync all users
-            List<User> userList = this.coordinator.syncUsers();
+            List<Client> userList = this.coordinator.syncUsers();
             addUsersToDao(userList);
             log.info("Synced User DB");
 
@@ -306,13 +302,13 @@ public class Server extends java.rmi.server.UnicastRemoteObject
     }
 
     @Override
-    public List<User> getAllUsers() throws RemoteException {
-        return this.users.findAll();
+    public List<Client> getAllUsers() throws RemoteException {
+        return this.users.findAllUser();
     }
 
-    private void addUsersToDao(List<User> userList) {
-        for (User user : userList) {
-            this.users.add(user.name, user.password);
+    private void addUsersToDao(List<Client> userList) {
+        for (Client user : userList) {
+            this.users.addUser(user.username, user.password);
         }
     }
 }

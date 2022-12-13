@@ -2,8 +2,11 @@ package server.operations;
 
 import java.util.Random;
 
+/**
+ * An abstract class which implements Operation and stores the operation's id.
+ */
 public abstract class AbstractOperation implements Operation {
-    private final String id;
+    private final String operationId;
     private final static int MIN_ID = 100000000;
     private final static int MAX_ID = 999999999;
 
@@ -12,16 +15,14 @@ public abstract class AbstractOperation implements Operation {
     }
 
     protected AbstractOperation(String idPrefix) {
-        this.id = idPrefix + "@" + getRandomIntInRange(MIN_ID, MAX_ID);
+        Random rand = new Random();
+        int num =  rand.nextInt((this.MAX_ID - this.MIN_ID) + 1) + this.MIN_ID;
+        this.operationId = idPrefix + "@" + num;
     }
 
     @Override
     public String getId() {
-        return id;
+        return this.operationId;
     }
 
-    private int getRandomIntInRange(int min, int max) {
-        Random rand = new Random();
-        return rand.nextInt((max - min) + 1) + min;
-    }
 }

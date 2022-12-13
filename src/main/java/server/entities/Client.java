@@ -3,23 +3,27 @@ package server.entities;
 import java.io.Serializable;
 import java.util.Objects;
 
-public class User implements Serializable {
-    public String name;
+/**
+ * A client class which consists of the login information in the form of username and password.
+ */
+public class Client implements Serializable {
+
+    public String username;
     public String password;
 
-    public User(String name, String password) {
-        this.name = name;
+    public Client(String name, String password) {
+        this.username = name;
         this.password = password;
     }
 
-    public User(User otherUser) {
-        this.name = otherUser.name;
+    public Client(Client otherUser) {
+        this.username = otherUser.username;
         this.password = otherUser.password;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(this.name, this.password);
+        return Objects.hash(this.username, this.password);
     }
 
     @Override
@@ -28,8 +32,8 @@ public class User implements Serializable {
             return true;
         if (obj == null || getClass() != obj.getClass())
             return false;
-        User other = (User) obj;
-        return (Objects.equals(this.name, other.name) || this.name.equals(other.name))
+        Client other = (Client) obj;
+        return (Objects.equals(this.username, other.username) || this.username.equals(other.username))
                 && (Objects.equals(this.password, other.password) || this.password.equals(other.password));
     }
 }

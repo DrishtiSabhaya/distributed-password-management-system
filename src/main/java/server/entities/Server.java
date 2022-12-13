@@ -3,9 +3,10 @@ package server.entities;
 import java.io.Serializable;
 
 /**
- * Class to hold and transfer information of a server.
+ * A server class whose attributes are name, host and port.
  */
 public class Server implements Serializable {
+
     public String name;
     public String host;
     public int port;

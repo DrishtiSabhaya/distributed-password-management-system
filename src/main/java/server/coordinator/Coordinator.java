@@ -6,7 +6,7 @@ import java.util.List;
 
 import server.entities.CoordinatorResult;
 import server.entities.Server;
-import server.entities.User;
+import server.entities.Client;
 
 /**
  * Represents a Coordinator for the 2PC algorithm. Servers call
@@ -36,7 +36,7 @@ public interface Coordinator extends Remote {
      * 
      * @return list of users
      */
-    List<User> syncUsers() throws RemoteException;
+    List<Client> syncUsers() throws RemoteException;
 
     /**
      * Used to get a password from the cluster of servers.
@@ -44,7 +44,7 @@ public interface Coordinator extends Remote {
      * @param password unique name of the password.
      * @return the document in question and a secret to later send with the ack.
      */
-    CoordinatorResult GetPassword(User user, String password) throws RemoteException;
+    CoordinatorResult GetPassword(Client user, String password) throws RemoteException;
 
     /**
      * An acknowledgement of the password that was queried is received. It
@@ -52,11 +52,11 @@ public interface Coordinator extends Remote {
      * 
      * @param password   unique password.
      * @param secret secret received with the result of
-     *               {@link #GetPassword(User user, String password)}
+     *               {@link #GetPassword(Client user, String password)}
      * @param server the server calling the function.
      * @return True if accepted else false
      */
-    Boolean GetPasswordAck(User user, String password, String secret, Server server)
+    Boolean GetPasswordAck(Client user, String password, String secret, Server server)
         throws RemoteException;
 
     /**

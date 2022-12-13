@@ -4,8 +4,10 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-//An LRU map with capacity 10 based on
-// https://leetcode.com/problems/lru-cache/discuss/45939/Laziest-implementation:-Java%27s-LinkedHashMap-takes-care-of-everything
+/**
+ * The LRU caching scheme is to remove the least recently used frame when the cache is full and a new page is
+ * referenced which is not there in the cache.
+ */
 public class LRU<K, V> {
     private final Map<K, V> map;
 

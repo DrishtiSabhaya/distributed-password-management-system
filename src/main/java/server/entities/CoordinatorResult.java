@@ -3,8 +3,7 @@ package server.entities;
 import java.io.Serializable;
 
 /**
- * A wrapper around Result. Holds an indicator of success and a secret to send
- * acknowledge of reception to the coordinator.
+ * A class which is used to store result, along with acknowledgement for the result to send to coordinator.
  */
 public class CoordinatorResult implements Serializable {
     public Result result;

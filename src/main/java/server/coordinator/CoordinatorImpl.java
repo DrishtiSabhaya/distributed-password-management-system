@@ -29,7 +29,7 @@ import server.entities.CoordinatorResult;
 import server.entities.PasswordSourceInfo;
 import server.entities.LRU;
 import server.entities.Server;
-import server.entities.User;
+import server.entities.Client;
 import server.operations.Operation;
 import server.operations.SignUpOperation;
 import server.server.CoordinatorServer;
@@ -37,8 +37,6 @@ import util.MyListener;
 
 public class CoordinatorImpl extends java.rmi.server.UnicastRemoteObject
     implements MutableCoordinator {
-
-    // TODO: Log
     private final Map<String, PasswordSourceInfo> keyToPasswordSourceMap;
     private final LRU<String, PasswordSourceInfo> keyToPasswordCache;
     private final Map<String, Server> serverList;
@@ -79,7 +77,6 @@ public class CoordinatorImpl extends java.rmi.server.UnicastRemoteObject
             abortOnAllServers(signUpOperation);
         } else {
             // Ask servers to execute
-            // TODO: Should we assume that the execute operation will pass?
             executeOnAllServers(signUpOperation);
         }
 
@@ -87,9 +84,9 @@ public class CoordinatorImpl extends java.rmi.server.UnicastRemoteObject
     }
 
     @Override
-    public List<User> syncUsers() throws RemoteException {
+    public List<Client> syncUsers() throws RemoteException {
 
-        List<User> allUsers = new ArrayList<>();
+        List<Client> allUsers = new ArrayList<>();
 
         if (this.serverList.isEmpty()) {
             return allUsers;
@@ -99,7 +96,7 @@ public class CoordinatorImpl extends java.rmi.server.UnicastRemoteObject
         for (Server server : this.serverList.values()) {
             try {
                 CoordinatorServer c = getRemoteServer(server);
-                List<User> tempUsers = c.getAllUsers();
+                List<Client> tempUsers = c.getAllUsers();
 
                 if (!tempUsers.isEmpty()) {
                     allUsers.addAll(tempUsers);
@@ -139,8 +136,8 @@ public class CoordinatorImpl extends java.rmi.server.UnicastRemoteObject
     }
 
     @Override
-    public CoordinatorResult GetPassword(User user, String password) {
-        log.info(String.format("GetPassword received for %s from %s", password, user.name));
+    public CoordinatorResult GetPassword(Client user, String password) {
+        log.info(String.format("GetPassword received for %s from %s", password, user.username));
         Lock l = this.getLock(password);
         l.lock();
         if (this.keyToPasswordCache.containsKey(password)) {
@@ -154,15 +151,15 @@ public class CoordinatorImpl extends java.rmi.server.UnicastRemoteObject
                 this.keyToPasswordSourceMap.put(password, info);
                 this.keyToPasswordCache.remove(password);
                 log.info(String.format("GetPassword found %s for %s on %s:%d and sent back",
-                    res.result.value,
-                    res.result.name, info.server.host, info.server.port));
+                    res.result.pvalue,
+                    res.result.pkey, info.server.host, info.server.port));
                 return res;
             } catch (MalformedURLException | RemoteException | NotBoundException e) {
                 e.printStackTrace();
                 l.unlock();
                 this.keyLockMap.remove(password);
                 log.error(String.format("Error in getting password %s of user %s :: %s",
-                    password, user.name,
+                    password, user.username,
                         e.getMessage()));
                 try {
                     this.removeServer(info.server.name);
@@ -191,8 +188,8 @@ public class CoordinatorImpl extends java.rmi.server.UnicastRemoteObject
                 this.keyToPasswordSourceMap.put(password, info);
                 this.keyToPasswordCache.remove(password);
                 log.info(String.format("GetPassword found %s for %s on %s:%d and sent back",
-                    res.result.value,
-                    res.result.name,
+                    res.result.pvalue,
+                    res.result.pkey,
                     server.host, server.port));
                 break;
             } catch (MalformedURLException | RemoteException | NotBoundException e) {
@@ -217,8 +214,8 @@ public class CoordinatorImpl extends java.rmi.server.UnicastRemoteObject
     }
 
     @Override
-    public Boolean GetPasswordAck(User user, String password, String secret, Server server) {
-        log.info(String.format("GetPasswordAck received for %s from %s", password, user.name));
+    public Boolean GetPasswordAck(Client user, String password, String secret, Server server) {
+        log.info(String.format("GetPasswordAck received for %s from %s", password, user.username));
         if (!this.keyToPasswordSourceMap.containsKey(password)) {
             return false;
         }
@@ -230,7 +227,7 @@ public class CoordinatorImpl extends java.rmi.server.UnicastRemoteObject
             CoordinatorServer c = getRemoteServer(info.server);
             if (!c.hasPassword(user, password) || !c.deletePassword(user, password)) {
                 log.info(String.format("GetPasswordAck received for %s from %s not accepted",
-                    password, user.name));
+                    password, user.username));
                 return false;
             }
             this.keyToPasswordSourceMap.remove(password);
@@ -240,7 +237,7 @@ public class CoordinatorImpl extends java.rmi.server.UnicastRemoteObject
             l.unlock();
             this.keyLockMap.remove(password);
             log.info(String.format("GetPasswordAck received for %s from %s accepted",
-                password, user.name));
+                password, user.username));
             return true;
         } catch (MalformedURLException | RemoteException | NotBoundException e) {
             e.printStackTrace();

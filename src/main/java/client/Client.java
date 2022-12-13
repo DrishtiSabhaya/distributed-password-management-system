@@ -1,6 +1,5 @@
 package client;
 
-import server.entities.User;
 import server.server.ClientServer;
 import util.ClientLogger;
 import util.Logger;
@@ -61,7 +60,7 @@ public class Client {
                 "Your entry is case insensitive.");
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
         String input = "";
-        User user = null;
+        server.entities.Client user = null;
         while (true) {
             try {
                 input = reader.readLine();
@@ -71,14 +70,14 @@ public class Client {
                 } else if (input.equalsIgnoreCase("s")) {
                     user = handleSignup(reader, server);
                     System.out.println("User creation successful.");
-                    System.out.println("Welcome " + user.name);
-                    logger.log(String.format("User with name: %s created successfully", user.name));
+                    System.out.println("Welcome " + user.username);
+                    logger.log(String.format("User with name: %s created successfully", user.username));
                     break;
                 } else if (input.equalsIgnoreCase("l")) {
                     user = handleLogin(reader, server);
                     System.out.println("Login successful.");
-                    System.out.println("Welcome " + user.name);
-                    logger.log(String.format("User with name: %s logged in successfully", user.name));
+                    System.out.println("Welcome " + user.username);
+                    logger.log(String.format("User with name: %s logged in successfully", user.username));
                     break;
                 } else {
                     System.out.println("Invalid input.");
@@ -91,7 +90,7 @@ public class Client {
         startPostLogin(reader, server, user);
     }
 
-    private static void startPostLogin(BufferedReader reader, ClientServer server, User user) {
+    private static void startPostLogin(BufferedReader reader, ClientServer server, server.entities.Client user) {
         System.out.println(getInstruction());
         System.out.println("Enter q at anytime to quit.");
         String request = "";
@@ -114,18 +113,18 @@ public class Client {
                 String method = input[0];
 
                 if (method.equalsIgnoreCase("get")) {
-                    logger.log("GET request made by user " + user.name +
+                    logger.log("GET request made by user " + user.username +
                         ". The request is " + request);
                     String result = server.GetPassword(user, input[1]);
                     logger.log("Response received from server: " + result);
                     if (result == null) {
                         System.out.println("There is no password associated with the name "
-                            + input[1] + " for " + "user " + user.name);
+                            + input[1] + " for " + "user " + user.username);
                     } else {
                         System.out.println("Password: " + result);
                     }
                 } else if (method.equalsIgnoreCase("put")) {
-                    logger.log("PUT request made by user " + user.name +
+                    logger.log("PUT request made by user " + user.username +
                         ". The request is " + request);
                     boolean successful = server.PutPassword(user, input[1], input[2]);
                     logger.log("Response received from server: " + successful);
@@ -136,7 +135,7 @@ public class Client {
                         System.out.println("PUT failed.");
                     }
                 } else {
-                    logger.log("DELETE request made by user " + user.name
+                    logger.log("DELETE request made by user " + user.username
                         + ". The request is " + request);
                     boolean successful = server.DeletePassword(user, input[1]);
                     logger.log("Response received from server: " + successful);
@@ -144,7 +143,7 @@ public class Client {
                         System.out.println("Delete successful. Key = " + input[1]);
                     } else {
                         System.out.println("There is no password associated with the name "
-                            + input[1] + " for " + "user " + user.name);
+                            + input[1] + " for " + "user " + user.username);
                     }
                 }
             } catch (IOException e) {
@@ -235,12 +234,12 @@ public class Client {
      * @param server remote server object
      * @return newly created user
      */
-    private static User handleSignup(BufferedReader reader, ClientServer server) {
+    private static server.entities.Client handleSignup(BufferedReader reader, ClientServer server) {
         System.out.println("Sign up initiated. Please note that the letter 'q' is " +
             "reserved for quiting the application, and cannot be used as a username or password. " +
             "The letter l is reserved for switching to login and cannot be used as a " +
             "username or password");
-        User u = null;
+        server.entities.Client u = null;
         while (true) {
             try {
                 System.out.println("Enter username: ");
@@ -284,12 +283,12 @@ public class Client {
      * @param server remote server object
      * @return logged in user
      */
-    private static User handleLogin(BufferedReader reader, ClientServer server) {
+    private static server.entities.Client handleLogin(BufferedReader reader, ClientServer server) {
         System.out.println("Login initiated. Please note that the letter 'q' is reserved " +
             "for quiting the application and cannot be used as a username or password. " +
             "The letter s is reserved for switching to sign up and cannot be used as a " +
             "username or password");
-        User u = null;
+        server.entities.Client u = null;
         while (true) {
             try {
                 System.out.println("Enter username: ");
