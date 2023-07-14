@@ -167,16 +167,6 @@ public class Server extends java.rmi.server.UnicastRemoteObject
         return this.users.findUser(username, password);
     }
 
-    public static void main(String[] args) {
-        try {
-            Server s = new Server("localhost", 50002, "localhost",
-                50001, "hi3");
-            System.out.println("Server started...");
-        } catch (RemoteException | MalformedURLException | NotBoundException e) {
-            e.printStackTrace();
-        }
-    }
-
     @Override
     public String GetPassword(Client user, String name) throws RemoteException {
         log.info(String.format("GetPassword received for %s by %s", name, user.username));
