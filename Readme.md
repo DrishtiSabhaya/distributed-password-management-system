@@ -1,15 +1,45 @@
-## Run the project
-The project consists of 3 jar files: coordinator.jar, server.jar and client.jar.
+# BSDS-Final Project
 
-We need to start the coordinator first using the following command: <br>
-``java -jar Coordinator.jar -jp <jmsport> -p <rmiport>``
+[Please find the project report in res/]
 
+## Overview
 
-After starting the coordinator, we can start the server using: <br>
-``java -jar Server.jar -p <selfport> -cp <coordinatorjmsport> -ch <coordinatorhost> -n <servername>``
+The project uses log4j, java rmi and jms as dependencies which are added to the pom.xml file. Generate jars for the 2 drivers in `src\main\java\server\driver` and the client present in `src\main\java\client` and then move to the running instructions. Jars are already generated and are int the `res` folder.
 
+## Running instructions
 
-We can start multiple servers by using the coordinator JMS port.
+[If you face errors while running the JAR file, please try deleting activemq-data directory]
 
-After starting the coordinator and server, we can start the client by using: <br>
+Navigate to res/ with the 3 jar files.
+
+To run the coordinator-
+
+`java -jar Coordinator.jar -jp <jmsport> -p <rmiport>`
+
+Example
+
+`java -jar Coordinator.jar -jp 50001 -p 50000`
+
+To run the server-
+
+`java -jar Server.jar -p <selfport> -cp <coordinatorjmsport> -ch <coordinatorhost> -n <servername>`
+
+Example
+
+`java -jar Server.jar -p 50003 -cp 50001 -ch localhost -n ser1`
+
+To run the Client
+
 `java -jar Client.jar <port> <hostname>`
+
+Example
+
+`java -jar Client.jar 50003 localhost`
+
+Please use a port not being used by some other process.
+
+There is a video that demos the running of the project.
+https://www.youtube.com/watch?v=1IKwztH2NtY
+
+Note.
+Code has been tested with local host and private network Ip. Currently might not work for public IP.
